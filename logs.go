@@ -54,6 +54,9 @@ func PostLogsString(c Client, logs string) error {
 	return nil
 }
 
+// getJSONString takes a slice of structs that include JSON metadata. It returns
+// a string with all JSON objects as a string containing all logs delimited by a
+// newline character (\n).
 func getJSONString[T any](s []T) (string, error) {
 	var sLogs []string
 	for _, v := range s {
@@ -71,6 +74,8 @@ func getJSONString[T any](s []T) (string, error) {
 	return strings.Join(sLogs, "\n"), nil
 }
 
+// hasJSONMetadata takes a struct and checks to confirm that all values inside
+// of the struct have JSON metadata for Marshalling before posting to Sumo Logic.
 func hasJSONMetadata(a any) bool {
 	val := reflect.ValueOf(a)
 	if val.Kind() != reflect.Struct {
