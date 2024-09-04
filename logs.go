@@ -9,34 +9,34 @@ import (
 	"strings"
 )
 
-type Client struct {
-	Endpoint string
+type LogEndpoint struct {
+	URL string
 }
 
-// NewClient creates and returns a new client using the provided endpointURL.
+// NewLogEndpoint creates and returns a new LogEndpoint using the provided URL.
 // It will check to ensure that the URL is valid and will return an error if it
 // is not.
-func NewClient(endpointURL string) (Client, error) {
+func NewLogEndpoint(endpointURL string) (LogEndpoint, error) {
 	if _, err := url.Parse(endpointURL); err != nil {
-		return Client{}, ErrBuildingClient{
+		return LogEndpoint{}, ErrBuildingClient{
 			Message: fmt.Sprintf("unable to build client using the URL '%s'", endpointURL),
 		}
 	}
-	return Client{Endpoint: endpointURL}, nil
+	return LogEndpoint{URL: endpointURL}, nil
 }
 
 // PostLogs will post the logs provided as a slice of logs. All logs structs
 // must include Metadata for JSON encoding.
 // It will return an error if there are problems parsing or posting the logs to
 // the Sumo Logic Endpoint.
-func PostLogs[T any](c Client, logs []T) error {
+func PostLogs[T any](e LogEndpoint, logs []T) error {
 	sLogs, err := getJSONString(logs)
 	if err != nil {
 		return ErrParsingLogs{
 			Message: fmt.Sprintf("error parsing logs: %v", err),
 		}
 	}
-	if err := PostLogsString(c, sLogs); err != nil {
+	if err := PostLogsString(e, sLogs); err != nil {
 		return ErrPostingLogs{
 			Message: err.Error(),
 		}
@@ -48,9 +48,9 @@ func PostLogs[T any](c Client, logs []T) error {
 // the provided Sumo Logic Client Endpoint.
 // The provided logs can be in any format, and should be delimited with a \n
 // (newline character).
-func PostLogsString(c Client, logs string) error {
+func PostLogsString(e LogEndpoint, logs string) error {
 	logReader := strings.NewReader(logs)
-	req, err := http.NewRequest("POST", c.Endpoint, logReader)
+	req, err := http.NewRequest("POST", e.URL, logReader)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func getJSONString[T any](s []T) (string, error) {
 	for _, v := range s {
 		if !hasJSONMetadata(v) {
 			return "", ErrParsingLogs{
-				Message: fmt.Sprint("object is missing json metadata"),
+				Message: "object is missing json metadata",
 			}
 		}
 		bLog, err := json.Marshal(v)

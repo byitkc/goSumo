@@ -16,10 +16,12 @@ type Log struct {
 
 func main() {
 	logs := generateLogs()
-	sumoClient := gosumo.Client{
-		Endpoint: "<endpoint url>",
+	sumoLogEndpoint, err := gosumo.NewLogEndpoint("<endpointURL>")
+	if err != nil {
+		slog.Error("error intializing Log Endpoint", "error", err)
 	}
-	if err := gosumo.PostLogs(sumoClient, logs); err != nil {
+
+	if err := gosumo.PostLogs(sumoLogEndpoint, logs); err != nil {
 		slog.Error("error posting logs to Sumo Logic", "error", err)
 		os.Exit(1)
 	}
