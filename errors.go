@@ -1,5 +1,13 @@
 package gosumo
 
+type ErrBuildingClient struct {
+	Message string
+}
+
+func (e ErrBuildingClient) Error() string {
+	return e.Message
+}
+
 type ErrPostingLogs struct {
 	Message string
 }

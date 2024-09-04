@@ -4,12 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strings"
 )
 
 type Client struct {
 	Endpoint string
+}
+
+// NewClient creates and returns a new client using the provided endpointURL.
+// It will check to ensure that the URL is valid and will return an error if it
+// is not.
+func NewClient(endpointURL string) (Client, error) {
+	if _, err := url.Parse(endpointURL); err != nil {
+		return Client{}, ErrBuildingClient{
+			Message: fmt.Sprintf("unable to build client using the URL '%s'", endpointURL),
+		}
+	}
+	return Client{Endpoint: endpointURL}, nil
 }
 
 // PostLogs will post the logs provided as a slice of logs. All logs structs
